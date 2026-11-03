@@ -1,0 +1,13 @@
+{
+  "name": "hexcolony",
+  "version": "0.1.0",
+  "description": "Multiplayer settlement-building strategy game (original code and assets)",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "test": "node test/sim.js && node test/trade.js && node test/ck.js && node test/ws.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
