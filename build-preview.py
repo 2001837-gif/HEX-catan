@@ -63,7 +63,7 @@ runtime = r"""
    if(!db)return cb('Shared storage is unavailable. Open this page while signed in to claude.ai, with Contributor access.');
    if(MP.role==='host')return cb(null,MP.code);
    var code=hex(3).toUpperCase();MP.role='host';MP.code=code;var clients={};
-   var beat=function(){db.doc('mp/'+code).set({t:Date.now(),code:code}).catch(function(){})};beat();setInterval(beat,20000);
+   var beat=function(){db.doc('mp/'+code).set({t:Date.now(),code:code}).catch(function(e){var x=document.getElementById('mperr2');if(!x){x=document.createElement('div');x.id='mperr2';x.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#b3261e;color:#fff;padding:8px;font:13px sans-serif';document.body.appendChild(x)}x.textContent='Room not visible to friends: could not save to shared storage ('+(e&&e.message||e)+'). You need Contributor/owner access on this page.'})};beat();setInterval(beat,20000);
    db.collection('mp/'+code+'/in').onSnapshot(function(snap){
     snap.docChanges().forEach(function(ch){
      if(ch.type==='removed')return;var d=ch.doc.data()||{},cid=ch.doc.id,c=clients[cid];
@@ -90,9 +90,9 @@ runtime = r"""
    if(!db)return cb('Shared storage is unavailable. Open this page while signed in to claude.ai, with Contributor access.');
    code=String(code||'').trim().toUpperCase();
    db.doc('mp/'+code).get().then(function(snap){
-    var d=snap.exists&&snap.data();if(!d||Date.now()-d.t>90000)return cb('No online host found for code '+code+'. Ask your friend to keep their tab open and check the code.');
+    var d=snap.exists&&snap.data();if(!d)return cb('Room '+code+' not found in shared storage. Check the code, and ask the host to keep the Lobby tab open.');if(Date.now()-d.t>300000)return cb('Room '+code+' exists but the host stopped responding '+Math.round((Date.now()-d.t)/60000)+' min ago. Ask them to reopen the tab and host again.');
     MP.role='guest';MP.code=code;MP.last=0;MP.i=0;MP.q=[];window.WebSocket=BridgeWS;setInterval(MP.push,20000);cb(null,code)
-   }).catch(function(){cb('Could not reach the host. Try again.')})})};
+   }).catch(function(e){cb('Could not read shared storage: '+(e&&e.message||e)+'. You may need Contributor access.')})})};
  window.__mp=MP;
 })();
 """
